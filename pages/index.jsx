@@ -18,6 +18,7 @@ export default function VotingSystem() {
     const [countdown, setCountdown] = useState('Loading...');
     const [notification, setNotification] = useState({ message: '', isError: false, show: false });
     const [serverTimeOffset, setServerTimeOffset] = useState(0);
+    const [endTime, setEndTime] = useState(null);
     const [isMuted, setIsMuted] = useState(false);
     const [countdownDate, setCountdownDate] = useState(null);
 
