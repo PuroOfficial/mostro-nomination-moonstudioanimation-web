@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
+import MaintenanceRedirect from '../components/MaintenanceRedirect';
 
 export default function VotingSystem() {
     const [nominees] = useState([
@@ -357,6 +358,8 @@ export default function VotingSystem() {
       <div className={`notification ${notification.show ? 'show' : ''} ${notification.isError ? 'error' : ''}`}>
         {notification.message}
       </div>
+
+      <MaintenanceRedirect />
 
       <style jsx>{`
         .container {
