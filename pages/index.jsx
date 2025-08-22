@@ -33,28 +33,76 @@ export default function VotingSystem() {
     }, []);
 
     const initializeApp = async () => {
-        await fetchTimer();
+        await initializeClock();
         fetchVoteCounts();
         checkIfVoted();
 
         // Set up interval for clock updates
         const clockInterval = setInterval(updateClock, 1000);
-        return () => clearInterval(clockInterval);
+
+        return () => {
+            clearInterval(clockInterval);
+        };
     };
 
-    const fetchTimer = async () => {
+    const initializeClock = async () => {
         try {
-            const response = await fetch('/api/timer');
-            const data = await response.json();
-            setCountdownDate(new Date(data.startTime));
-            startCountdown(new Date(data.startTime));
+            const res = await fetch('/api/clock');
+            const data = await res.json();
+
+            // Calculate the offset between server and client
+            const clientTime = Date.now();
+            const serverTime = data.currentTime;
+            const offset = serverTime - clientTime;
+
+            setServerTimeOffset(offset);
+
+            // Calculate end time (6 days from server start)
+            const endTimeValue = data.serverStartTime + (6 * 24 * 60 * 60 * 1000);
+            setEndTime(endTimeValue);
+
+            // Initial countdown update
+            updateCountdown();
         } catch (error) {
-            console.error('Error fetching timer:', error);
-            // Fallback: create new timer
-            const fallbackDate = new Date();
-            fallbackDate.setDate(fallbackDate.getDate() + 6);
-            setCountdownDate(fallbackDate);
-            startCountdown(fallbackDate);
+            console.error('Error fetching server time:', error);
+            // Fallback to client time if server is unavailable
+            setServerTimeOffset(0);
+            const endTimeValue = Date.now() + (6 * 24 * 60 * 60 * 1000);
+            setEndTime(endTimeValue);
+        }
+    };
+
+    const updateCountdown = () => {
+        if (!endTime) return;
+
+        const now = Date.now() + serverTimeOffset;
+        const distance = endTime - now;
+
+        if (distance < 0) {
+            setCountdown("Voting has ended!");
+            return;
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+
+        // Play sounds based on time remaining
+        if (!isMuted) {
+            // Play tick sound every second
+            if (tickSoundRef.current) {
+                playSound(tickSoundRef.current);
+            }
+
+            // Play warning sounds
+            if (distance < 60000 && finalWarnSoundRef.current) { // Less than 1 minute
+                playSound(finalWarnSoundRef.current);
+            } else if (distance < 86400000 && warnSoundRef.current) { // Less than 24 hours
+                playSound(warnSoundRef.current);
+            }
         }
     };
 
