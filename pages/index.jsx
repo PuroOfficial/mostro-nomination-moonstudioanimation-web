@@ -297,7 +297,7 @@ export default function VotingSystem() {
             }
             
             .countdown-timer {
-              font-family: 'Inter', monospace;
+              font-family: "Inter", monospace;
             }
           `}
         </style>
