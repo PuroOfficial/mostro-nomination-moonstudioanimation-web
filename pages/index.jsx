@@ -2,231 +2,224 @@ import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 
 export default function VotingSystem() {
-  const [nominees, setNominees] = useState([
-    { id: 1, name: "Moon Studio Animation", avatar: "moonstudioanimation.jpg" },
-    { id: 2, name: "Seel", avatar: "seel.jpg" },
-    { id: 3, name: "Epic", avatar: "epicyay.jpg" },
-    { id: 4, name: "Pool", avatar: "poolbadyou.jpg" },
-    { id: 5, name: "Adorable Steve", avatar: "adorablesteve.jpg" },
-    { id: 6, name: "Mar", avatar: "mar.jpg" },
-    { id: 7, name: "JSkript", avatar: "jskript.jpg" }
-  ]);
-  const [selectedNominee, setSelectedNominee] = useState(null);
-  const [hasVoted, setHasVoted] = useState(false);
-  const [voteCounts, setVoteCounts] = useState({});
-  const [countdown, setCountdown] = useState('Loading...');
-  const [notification, setNotification] = useState({ message: '', isError: false, show: false });
-  const [isMuted, setIsMuted] = useState(false);
-  const [serverTimeOffset, setServerTimeOffset] = useState(0);
-  const [endTime, setEndTime] = useState(null);
+    const [nominees] = useState([
+        { id: 1, name: "Moon Studio Animation" },
+        { id: 2, name: "Seel" },
+        { id: 3, name: "Epic" },
+        { id: 4, name: "Pool" },
+        { id: 5, name: "Adorable Steve" },
+        { id: 6, name: "Mar" },
+        { id: 7, name: "JSkript" }
+    ]);
+    const [selectedNominee, setSelectedNominee] = useState(null);
+    const [hasVoted, setHasVoted] = useState(false);
+    const [voteCounts, setVoteCounts] = useState({});
+    const [countdown, setCountdown] = useState('Loading...');
+    const [notification, setNotification] = useState({ message: '', isError: false, show: false });
+    const [isMuted, setIsMuted] = useState(false);
+    const [countdownDate, setCountdownDate] = useState(null);
 
-  // Refs for audio elements
-  const tickSoundRef = useRef(null);
-  const warnSoundRef = useRef(null);
-  const finalWarnSoundRef = useRef(null);
+    // Refs for audio elements
+    const tickSoundRef = useRef(null);
+    const warnSoundRef = useRef(null);
+    const finalWarnSoundRef = useRef(null);
 
-  // Refs for clock hands
-  const secondHandRef = useRef(null);
+    // Refs for clock hands
+    const secondHandRef = useRef(null);
 
-  useEffect(() => {
-    // Get server time to sync clock
-    initializeClock();
-    fetchVoteCounts();
-    checkIfVoted();
-    
-    // Set up interval for clock updates
-    const clockInterval = setInterval(updateClock, 1000);
+    useEffect(() => {
+        initializeApp();
+    }, []);
 
-    return () => {
-      clearInterval(clockInterval);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (endTime) {
-      const countdownInterval = setInterval(updateCountdown, 1000);
-      return () => clearInterval(countdownInterval);
-    }
-  }, [endTime]);
-
-  const initializeClock = async () => {
-    try {
-      const res = await fetch('/api/clock');
-      const data = await res.json();
-      
-      // Calculate the offset between server and client
-      const clientTime = Date.now();
-      const serverTime = data.currentTime;
-      const offset = serverTime - clientTime;
-      
-      setServerTimeOffset(offset);
-      
-      // Calculate end time (6 days from server start)
-      const endTimeValue = data.serverStartTime + (6 * 24 * 60 * 60 * 1000);
-      setEndTime(endTimeValue);
-      
-      // Initial countdown update
-      updateCountdown();
-    } catch (error) {
-      console.error('Error fetching server time:', error);
-      // Fallback to client time if server is unavailable
-      setServerTimeOffset(0);
-      const endTimeValue = Date.now() + (6 * 24 * 60 * 60 * 1000);
-      setEndTime(endTimeValue);
-    }
-  };
-
-  const updateCountdown = () => {
-    if (!endTime) return;
-    
-    const now = Date.now() + serverTimeOffset;
-    const distance = endTime - now;
-
-    if (distance < 0) {
-      setCountdown("Voting has ended!");
-      return;
-    }
-
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-    setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
-
-    // Play sounds based on time remaining
-    if (!isMuted) {
-      // Play tick sound every second
-      if (tickSoundRef.current) {
-        playSound(tickSoundRef.current);
-      }
-      
-      // Play warning sounds
-      if (distance < 60000 && finalWarnSoundRef.current) { // Less than 1 minute
-        playSound(finalWarnSoundRef.current);
-      } else if (distance < 86400000 && warnSoundRef.current) { // Less than 24 hours
-        playSound(warnSoundRef.current);
-      }
-    }
-  };
-
-  const fetchVoteCounts = async () => {
-    try {
-      const res = await fetch('/api/votes');
-      const data = await res.json();
-      setVoteCounts(data);
-    } catch (error) {
-      console.error('Error fetching vote counts:', error);
-      showNotification('Error loading results', true);
-    }
-  };
-
-  const checkIfVoted = () => {
-    if (typeof window !== 'undefined') {
-      const voted = localStorage.getItem('hasVoted') === 'true';
-      setHasVoted(voted);
-    }
-  };
-
-  const generateVoterId = () => {
-    if (typeof window !== 'undefined') {
-      let voterId = localStorage.getItem('voterId');
-      if (!voterId) {
-        voterId = 'voter-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-        localStorage.setItem('voterId', voterId);
-      }
-      return voterId;
-    }
-    return '';
-  };
-
-  const submitVote = async () => {
-    if (!selectedNominee) {
-      showNotification('Please select a nominee first!', true);
-      return;
-    }
-
-    if (hasVoted) {
-      showNotification("You've already voted!", true);
-      return;
-    }
-
-    try {
-      const voterId = generateVoterId();
-      const res = await fetch('/api/votes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nomineeId: selectedNominee, voterId })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setHasVoted(true);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('hasVoted', 'true');
-        }
-        showNotification(`Your vote for ${getNomineeName(selectedNominee)} has been recorded!`);
+    const initializeApp = async () => {
+        await fetchTimer();
         fetchVoteCounts();
-      } else {
-        showNotification(data.error || 'Failed to submit vote', true);
-      }
-    } catch (error) {
-      console.error('Error submitting vote:', error);
-      showNotification('Error submitting vote. Please try again.', true);
-    }
-  };
+        checkIfVoted();
 
-  const getNomineeName = (id) => {
-    const nominee = nominees.find(n => n.id === parseInt(id));
-    return nominee ? nominee.name : 'Unknown';
-  };
+        // Set up interval for clock updates
+        const clockInterval = setInterval(updateClock, 1000);
+        return () => clearInterval(clockInterval);
+    };
 
-  const showNotification = (message, isError = false) => {
-    setNotification({ message, isError, show: true });
-    setTimeout(() => {
-      setNotification({ message: '', isError: false, show: false });
-    }, 3000);
-  };
+    const fetchTimer = async () => {
+        try {
+            const response = await fetch('/api/timer');
+            const data = await response.json();
+            setCountdownDate(new Date(data.startTime));
+            startCountdown(new Date(data.startTime));
+        } catch (error) {
+            console.error('Error fetching timer:', error);
+            // Fallback: create new timer
+            const fallbackDate = new Date();
+            fallbackDate.setDate(fallbackDate.getDate() + 6);
+            setCountdownDate(fallbackDate);
+            startCountdown(fallbackDate);
+        }
+    };
 
-  const updateClock = () => {
-    const now = new Date();
-    const seconds = now.getSeconds();
-    
-    // Calculate angle (each second = 6 degrees)
-    const secondAngle = seconds * 6;
-    
-    // Apply rotation to second hand
-    if (secondHandRef.current) {
-      secondHandRef.current.style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;
-    }
-  };
+    const fetchVoteCounts = async () => {
+        try {
+            const response = await fetch('/api/votes');
+            const data = await response.json();
+            setVoteCounts(data);
+        } catch (error) {
+            console.error('Error fetching vote counts:', error);
+            showNotification('Error loading results', true);
+        }
+    };
 
-  const playSound = (sound) => {
-    if (isMuted || !sound) return;
-    
-    try {
-      sound.currentTime = 0;
-      sound.play().catch(e => console.log("Audio play failed:", e));
-    } catch (error) {
-      console.log("Error playing sound:", error);
-    }
-  };
+    const checkIfVoted = () => {
+        if (typeof window !== 'undefined') {
+            const voted = localStorage.getItem('hasVoted') === 'true';
+            setHasVoted(voted);
+        }
+    };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
+    const generateVoterId = () => {
+        if (typeof window !== 'undefined') {
+            let voterId = localStorage.getItem('voterId');
+            if (!voterId) {
+                voterId = 'voter-' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+                localStorage.setItem('voterId', voterId);
+            }
+            return voterId;
+        }
+        return '';
+    };
 
-  const resetVote = () => {
-    setHasVoted(false);
-    setSelectedNominee(null);
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('hasVoted');
-    }
-    showNotification("Your vote has been reset. You can vote again.");
-  };
+    const submitVote = async () => {
+        if (!selectedNominee) {
+            showNotification('Please select a nominee first!', true);
+            return;
+        }
 
-  const totalVotes = Object.values(voteCounts).reduce((sum, count) => sum + count, 0);
+        if (hasVoted) {
+            showNotification("You've already voted!", true);
+            return;
+        }
+
+        try {
+            const voterId = generateVoterId();
+            const response = await fetch('/api/votes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nomineeId: selectedNominee, voterId })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setHasVoted(true);
+                if (typeof window !== 'undefined') {
+                    localStorage.setItem('hasVoted', 'true');
+                }
+                showNotification(`Your vote for ${getNomineeName(selectedNominee)} has been recorded!`);
+                setVoteCounts(data); // Update with new counts from server
+            } else {
+                showNotification(data.error || 'Failed to submit vote', true);
+            }
+        } catch (error) {
+            console.error('Error submitting vote:', error);
+            showNotification('Error submitting vote. Please try again.', true);
+        }
+    };
+
+    const getNomineeName = (id) => {
+        const nominee = nominees.find(n => n.id === parseInt(id));
+        return nominee ? nominee.name : 'Unknown';
+    };
+
+    const showNotification = (message, isError = false) => {
+        setNotification({ message, isError, show: true });
+        setTimeout(() => {
+            setNotification({ message: '', isError: false, show: false });
+        }, 3000);
+    };
+
+    const startCountdown = (endDate) => {
+        let lastSecond = null;
+
+        const updateCountdown = () => {
+            const now = new Date();
+            const distance = endDate - now;
+
+            if (distance < 0) {
+                setCountdown("Voting has ended!");
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            setCountdown(`${days}d ${hours}h ${minutes}m ${seconds}s`);
+
+            // Play sounds based on time remaining
+            if (!isMuted) {
+                // Play tick sound every second
+                if (seconds !== lastSecond && tickSoundRef.current) {
+                    playSound(tickSoundRef.current);
+                    lastSecond = seconds;
+                }
+
+                // Play warning sounds
+                if (distance < 60000 && finalWarnSoundRef.current) { // Less than 1 minute
+                    playSound(finalWarnSoundRef.current);
+                } else if (distance < 86400000 && warnSoundRef.current) { // Less than 24 hours
+                    playSound(warnSoundRef.current);
+                }
+            }
+        };
+
+        updateCountdown();
+        const countdownInterval = setInterval(updateCountdown, 1000);
+        return () => clearInterval(countdownInterval);
+    };
+
+    const updateClock = () => {
+        const now = new Date();
+        const seconds = now.getSeconds();
+
+        // Calculate angle (each second = 6 degrees)
+        const secondAngle = seconds * 6;
+
+        // Apply rotation to second hand
+        if (secondHandRef.current) {
+            secondHandRef.current.style.transform = `translateX(-50%) rotate(${secondAngle}deg)`;
+        }
+    };
+
+    const playSound = (sound) => {
+        if (isMuted || !sound) return;
+
+        try {
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("Audio play failed:", e));
+        } catch (error) {
+            console.log("Error playing sound:", error);
+        }
+    };
+
+    const toggleMute = () => {
+        setIsMuted(!isMuted);
+    };
+
+    const resetVote = () => {
+        setHasVoted(false);
+        setSelectedNominee(null);
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('hasVoted');
+        }
+        showNotification("Your vote has been reset. You can vote again.");
+    };
+
+    const refreshResults = () => {
+        fetchVoteCounts();
+        showNotification("Results refreshed!");
+    };
+
+    const totalVotes = Object.values(voteCounts).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="container">
