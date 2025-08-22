@@ -3,6 +3,7 @@ import Head from 'next/head';
 import MaintenanceRedirect from '../components/MaintenanceRedirect';
 
 export default function VotingSystem() {
+    // half of this stuff doesn't work
     const [nominees] = useState([
         { id: 1, name: "Moon Studio Animation", avatar: "moonstudioanimation.jpg" },
         { id: 2, name: "Seel", avatar: "seel.jpg" },
@@ -57,7 +58,7 @@ export default function VotingSystem() {
             const serverTime = data.currentTime;
             const offset = serverTime - clientTime;
 
-            setServerTimeOffset(offset);
+            setServerTimeOffset(offset); setServerTimeOffset(offset);
 
             // Calculate end time (6 days from server start)
             const endTimeValue = data.serverStartTime + (6 * 24 * 60 * 60 * 1000);
@@ -68,7 +69,7 @@ export default function VotingSystem() {
         } catch (error) {
             console.error('Error fetching server time:', error);
             // Fallback to client time if server is unavailable
-            setServerTimeOffset(0);
+            setServerTimeOffset(0); setServerTimeOffset(0);
             const endTimeValue = Date.now() + (6 * 24 * 60 * 60 * 1000);
             setEndTime(endTimeValue);
         }
