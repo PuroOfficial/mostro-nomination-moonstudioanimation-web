@@ -3,13 +3,13 @@ import Head from 'next/head';
 
 export default function VotingSystem() {
     const [nominees] = useState([
-        { id: 1, name: "Moon Studio Animation" },
-        { id: 2, name: "Seel" },
-        { id: 3, name: "Epic" },
-        { id: 4, name: "Pool" },
-        { id: 5, name: "Adorable Steve" },
-        { id: 6, name: "Mar" },
-        { id: 7, name: "JSkript" }
+        { id: 1, name: "Moon Studio Animation", avatar: "moonstudioanimation.jpg" },
+        { id: 2, name: "Seel", avatar: "seel.jpg" },
+        { id: 3, name: "Epic", avatar: "epicyay.jpg" },
+        { id: 4, name: "Pool", avatar: "poolbadyou.jpg" },
+        { id: 5, name: "Adorable Steve", avatar: "adorablesteve.jpg" },
+        { id: 6, name: "Mar", avatar: "mar.jpg" },
+        { id: 7, name: "JSkript", avatar: "jskript.jpg" }
     ]);
     const [selectedNominee, setSelectedNominee] = useState(null);
     const [hasVoted, setHasVoted] = useState(false);
@@ -315,10 +315,6 @@ export default function VotingSystem() {
         
         <button className="refresh-btn" onClick={fetchVoteCounts}>
           Refresh Results
-        </button>
-        
-        <button className="reset-btn" onClick={resetVote}>
-          Reset My Vote
         </button>
       </div>
       
