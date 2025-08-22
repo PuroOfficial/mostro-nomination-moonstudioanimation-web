@@ -232,6 +232,7 @@ export default function VotingSystem() {
     <div className="container">
       <Head>
         <title>Vote your Favorite Mostro831 Fan for a Nomination</title>
+	<link rel="icon" href="/assets/favicon.png" />
         {/* Embedded font styles */}
         <style>
           {`
@@ -310,13 +311,23 @@ export default function VotingSystem() {
         ))}
       </div>
       
-      <button 
-        className="vote-btn" 
-        onClick={submitVote}
-        disabled={hasVoted || !selectedNominee}
-      >
-        Submit Your Vote
-      </button>
+      <div className="vote-controls">
+        <button 
+          className="vote-btn" 
+          onClick={submitVote}
+          disabled={hasVoted || !selectedNominee}
+        >
+          Submit Your Vote
+        </button>
+        
+        <button className="refresh-btn" onClick={fetchVoteCounts}>
+          Refresh Results
+        </button>
+        
+        <button className="reset-btn" onClick={resetVote}>
+          Reset My Vote
+        </button>
+      </div>
       
       <div className="results">
         <h2>Current Results</h2>
@@ -347,12 +358,6 @@ export default function VotingSystem() {
             );
           })}
         </div>
-      </div>
-      
-      <div className="admin-section">
-        <h2>Admin Functions</h2>
-        <button className="admin-btn" onClick={fetchVoteCounts}>Refresh Results</button>
-        <button className="admin-btn" onClick={resetVote}>Reset My Vote</button>
       </div>
       
       <footer>
@@ -446,7 +451,7 @@ export default function VotingSystem() {
         }
         
         .second-hand {
-          width: 2px;
+          width: 6px;
           height: 40px;
           margin-left: -1px;
           background: rgba(255, 255, 255, 0.9);
@@ -527,6 +532,14 @@ export default function VotingSystem() {
           color: white;
         }
         
+        .vote-controls {
+          display: flex;
+          justify-content: center;
+          gap: 15px;
+          margin: 25px 0;
+          flex-wrap: wrap;
+        }
+        
         .vote-btn {
           background: linear-gradient(to right, #ff7e5f, #feb47b);
           color: white;
@@ -535,8 +548,6 @@ export default function VotingSystem() {
           font-size: 1.2rem;
           border-radius: 50px;
           cursor: pointer;
-          margin: 25px auto;
-          display: block;
           transition: all 0.3s ease;
           font-weight: bold;
           box-shadow: 0 5px 15px rgba(255, 126, 95, 0.4);
@@ -553,6 +564,23 @@ export default function VotingSystem() {
           cursor: not-allowed;
           transform: none;
           box-shadow: none;
+        }
+        
+        .refresh-btn, .reset-btn {
+          background: linear-gradient(to right, #6a11cb, #2575fc);
+          color: white;
+          border: none;
+          padding: 12px 20px;
+          border-radius: 50px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          box-shadow: 0 3px 10px rgba(106, 17, 203, 0.3);
+          font-weight: 500;
+        }
+        
+        .refresh-btn:hover, .reset-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
         }
         
         .results {
@@ -631,32 +659,6 @@ export default function VotingSystem() {
           background: #a22;
         }
         
-        .admin-section {
-          margin-top: 40px;
-          padding: 20px;
-          background: #1e1e1e;
-          border-radius: 12px;
-          border: 1px solid #333;
-          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-        
-        .admin-btn {
-          background: linear-gradient(to right, #6a11cb, #2575fc);
-          color: white;
-          border: none;
-          padding: 10px 20px;
-          border-radius: 6px;
-          cursor: pointer;
-          margin-right: 10px;
-          transition: all 0.2s ease;
-          box-shadow: 0 3px 10px rgba(106, 17, 203, 0.3);
-        }
-        
-        .admin-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 5px 15px rgba(106, 17, 203, 0.4);
-        }
-        
         .audio-controls {
           display: flex;
           align-items: center;
@@ -699,6 +701,15 @@ export default function VotingSystem() {
           .avatar-container {
             width: 80px;
             height: 80px;
+          }
+          
+          .vote-controls {
+            flex-direction: column;
+            align-items: center;
+          }
+          
+          .refresh-btn, .reset-btn {
+            width: 200px;
           }
         }
       `}</style>
