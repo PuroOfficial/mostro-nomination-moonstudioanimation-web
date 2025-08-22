@@ -1,20 +1,37 @@
-// Store the server start time (this will persist across requests)
-let serverStartTime = null;
+import { put, get } from '@vercel/blob';
 
-export default function handler(req, res) {
-  if (req.method === 'GET') {
-    // Initialize server start time if not set
-    if (!serverStartTime) {
-      serverStartTime = Date.now();
+const BLOB_READ_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
+
+export default async function handler(req, res) {
+    if (req.method === 'GET') {
+        try {
+            // Try to get existing timer from blob storage
+            try {
+                const blob = await get('timer-config.json', {
+                    token: BLOB_READ_WRITE_TOKEN
+                });
+                const data = JSON.parse(blob.content);
+                res.status(200).json(data);
+            } catch (error) {
+                // Create new timer if none exists
+                const startTime = new Date();
+                startTime.setDate(startTime.getDate() + 6);
+
+                const timerData = {
+                    startTime: startTime.toISOString(),
+                    createdAt: new Date().toISOString()
+                };
+
+                await put('timer-config.json', JSON.stringify(timerData), {
+                    access: 'public',
+                    token: BLOB_READ_WRITE_TOKEN
+                });
+
+                res.status(200).json(timerData);
+            }
+        } catch (error) {
+            console.error('Error with timer blob storage:', error);
+            res.status(500).json({ error: 'Failed to get timer' });
+        }
     }
-    
-    // Return the server start time and current time
-    res.status(200).json({
-      serverStartTime,
-      currentTime: Date.now()
-    });
-  } else {
-    res.setHeader('Allow', ['GET']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
 }
