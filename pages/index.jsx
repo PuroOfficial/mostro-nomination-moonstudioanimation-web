@@ -28,22 +28,26 @@ export default function VotingSystem() {
   // Refs for clock hands
   const secondHandRef = useRef(null);
 
-    useEffect(() => {
-        const fetchTimer = async () => {
-            try {
-                const response = await fetch('/api/timer');
-                const data = await response.json();
-                setCountdownDate(new Date(data.startTime));
-            } catch (error) {
-                // Fallback
-                const fallbackDate = new Date();
-                fallbackDate.setDate(fallbackDate.getDate() + 6);
-                setCountdownDate(fallbackDate);
-            }
-        };
+  useEffect(() => {
+    // Get server time to sync clock
+    initializeClock();
+    fetchVoteCounts();
+    checkIfVoted();
+    
+    // Set up interval for clock updates
+    const clockInterval = setInterval(updateClock, 1000);
 
-        fetchTimer();
-    }, []);
+    return () => {
+      clearInterval(clockInterval);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (endTime) {
+      const countdownInterval = setInterval(updateCountdown, 1000);
+      return () => clearInterval(countdownInterval);
+    }
+  }, [endTime]);
 
   const initializeClock = async () => {
     try {
