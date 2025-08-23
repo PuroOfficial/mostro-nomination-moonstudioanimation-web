@@ -308,16 +308,16 @@ export default function VotingSystem() {
         <p>Vote for your favorite nominee! Only one vote per person is allowed.</p>
       </header>
       
-      <div className="countdown-banner">
-        <div className="countdown-content">
-          <h2>Time remaining to vote:</h2>
-          <div className="countdown-timer">{countdown}</div>
-          <div className="audio-controls">
-            <span>Sound:</span>
-            <button className="mute-btn" onClick={toggleMute}>
-              {isMuted ? 'Unmute' : 'Mute'}
-            </button>
-          </div>
+        <div className="countdown-banner">
+              <div className="countdown-content">
+                  <h2>Time remaining to vote:</h2>
+                  <div className="countdown-timer">{countdown}</div>
+                  <div className="audio-controls">
+                      <span>Sound:</span>
+                      <button className="mute-btn" onClick={toggleMute}>
+                          {isMuted ? 'Unmute' : 'Mute'}
+                      </button>
+                  </div>
         </div>
         
         <div className="clock-container">

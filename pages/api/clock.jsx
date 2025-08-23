@@ -5,7 +5,7 @@ export default function handler(req, res) {
     if (req.method === 'GET') {
         // Initialize server start time if not set
         if (!serverStartTime) {
-            serverStartTime = Date.now();
+            serverStartTime = 1755903600;
         }
 
         // Return the server start time and current time
