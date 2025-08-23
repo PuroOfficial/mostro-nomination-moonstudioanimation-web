@@ -48,6 +48,13 @@ export default function VotingSystem() {
         };
     };
 
+    useEffect(() => {
+        if (endTime) {
+            const countdownInterval = setInterval(updateCountdown, 1000);
+            return () => clearInterval(countdownInterval);
+        }
+    }, [endTime]);
+
     const initializeClock = async () => {
         try {
             const res = await fetch('/api/clock');
