@@ -6,7 +6,9 @@ let votes = {
     "Pool": 0,
     "Adorable Steve": 0,
     "Mar": 0,
-    "JSkript": 0
+    "JSkript": 0,
+    "Rash": 0,
+    "Firey": 0
   };
   
   export default function handler(req, res) {

@@ -21,7 +21,9 @@ export default async function handler(req, res) {
                 4: 0, // Pool
                 5: 0, // Adorable Steve
                 6: 0, // Mar
-                7: 0  // JSkript
+                7: 0, // JSkript
+                8: 0, // Rash
+                9: 0  // Firey
             };
 
             for (const blob of blobs) {
