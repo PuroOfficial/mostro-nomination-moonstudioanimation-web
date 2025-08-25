@@ -8,12 +8,11 @@ export default function VotingSystem() {
         { id: 1, name: "Moon Studio Animation", avatar: "moonstudioanimation.jpg" },
         { id: 2, name: "Seel", avatar: "seel.jpg" },
         { id: 3, name: "Epic", avatar: "epicyay.jpg" },
-        { id: 4, name: "Pool", avatar: "poolbadyou.jpg" },
+        { id: 4, name: "Rash", avatar: "rash.png" },
         { id: 5, name: "Adorable Steve", avatar: "adorablesteve.jpg" },
         { id: 6, name: "Mar", avatar: "mar.jpg" },
         { id: 7, name: "JSkript", avatar: "jskript.jpg" },
-        { id: 8, name: "Rash", avatar: "rash.png" },
-        { id: 9, name: "Firey", avatar: "firey.png" }
+        { id: 8, name: "Firey", avatar: "firey.png" }
     ]);
     const [selectedNominee, setSelectedNominee] = useState(null);
     const [hasVoted, setHasVoted] = useState(false);

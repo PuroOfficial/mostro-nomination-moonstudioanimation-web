@@ -18,12 +18,11 @@ export default async function handler(req, res) {
                 1: 0, // Moon Studio Animation
                 2: 0, // Seel
                 3: 0, // Epic
-                4: 0, // Pool
+                4: 0, // Rash
                 5: 0, // Adorable Steve
                 6: 0, // Mar
                 7: 0, // JSkript
-                8: 0, // Rash
-                9: 0  // Firey
+                8: 0  // Firey
             };
 
             for (const blob of blobs) {

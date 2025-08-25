@@ -3,11 +3,10 @@ let votes = {
     "Moon Studio Animation": 0,
     "Seel": 0,
     "Epic": 0,
-    "Pool": 0,
+    "Rash": 0,
     "Adorable Steve": 0,
     "Mar": 0,
     "JSkript": 0,
-    "Rash": 0,
     "Firey": 0
   };
   
